@@ -36,7 +36,7 @@ Clipzy is built for portability and speed:
 
 ### Installation
 
-1.  Download the latest [Release](https://github.com/yourusername/Clipzy/releases).
+1.  Download the latest [Release](https://github.com/yourusername/Clipzy/releases/tag/v1.0.0).
 2.  Launch `Clipzy.exe`.
 3.  Find the hamster in your System Tray!
 
