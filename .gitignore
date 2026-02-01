@@ -1,0 +1,35 @@
+# .NET Core
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+.vscode/
+.vs/
+.idea/
+*.user
+*.userosscache
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+mono_crash.*
+[Cc]ache/
+
+# Build results
+[Rr]elease/
+[Dd]ebug/
+x64/
+x86/
+[Bb]uild/
+
+# Artifacts
+C:\Users\Sanih\.gemini/
+.gemini/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# User Files
+app.ico.png
+IconConverter.cs
