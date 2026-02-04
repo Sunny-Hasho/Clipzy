@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using Microsoft.Win32;
+using System.Threading;
 
 namespace Clipzy
 {
@@ -18,10 +19,24 @@ namespace Clipzy
         private TrayService _trayService = new();
         private bool _isHotkeyEnabled = true;
         private string _lastUsedPath = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+        private static Mutex? _instanceMutex;
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
+            // Single Instance Check - Prevent multiple instances
+            const string mutexName = "ClipzyApp_SingleInstance_Mutex";
+            _instanceMutex = new Mutex(true, mutexName, out bool createdNew);
+
+            if (!createdNew)
+            {
+                // Another instance is already running, show custom notification
+                var notification = new NotificationWindow("Clipzy is already running. Check the system tray.");
+                notification.ShowDialog();
+                Shutdown();
+                return;
+            }
 
             // Argument Parsing
             string[] args = e.Args;
@@ -151,11 +166,20 @@ namespace Clipzy
         }
 
 
+
         protected override void OnExit(ExitEventArgs e)
         {
+            // Remove from startup registry when user exits the app
+            SetStartup(false);
+            
             _hotkeyService.Dispose();
             _trayService.Dispose();
             _contextMenuService.Unregister();
+            
+            // Release the mutex
+            _instanceMutex?.ReleaseMutex();
+            _instanceMutex?.Dispose();
+            
             base.OnExit(e);
         }
     }
