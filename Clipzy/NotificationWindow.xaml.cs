@@ -1,27 +1,23 @@
 using System.Windows;
+using System.Windows.Input;
 
 namespace Clipzy
 {
     public partial class NotificationWindow : Window
     {
-        public NotificationWindow(string message)
+        public NotificationWindow(string title, string message, string buttonText)
         {
             InitializeComponent();
-            TxtMessage.Text = message;
+            this.MouseLeftButtonDown += (s, e) => this.DragMove();
+
+            TitleText.Text = title;
+            MessageText.Text = message;
+            ButtonText.Text = buttonText;
         }
 
-        private void BtnOk_Click(object sender, RoutedEventArgs e)
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
-        }
-
-        protected override void OnSourceInitialized(EventArgs e)
-        {
-            base.OnSourceInitialized(e);
-            IntPtr hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
-            int exStyle = Clipzy.Core.NativeMethods.GetWindowLong(hwnd, Clipzy.Core.NativeMethods.GWL_EXSTYLE);
-            Clipzy.Core.NativeMethods.SetWindowLong(hwnd, Clipzy.Core.NativeMethods.GWL_EXSTYLE,
-                exStyle | Clipzy.Core.NativeMethods.WS_EX_TOOLWINDOW);
         }
     }
 }

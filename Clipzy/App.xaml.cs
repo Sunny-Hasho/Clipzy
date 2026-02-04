@@ -19,24 +19,25 @@ namespace Clipzy
         private TrayService _trayService = new();
         private bool _isHotkeyEnabled = true;
         private string _lastUsedPath = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-        private static Mutex? _instanceMutex;
+
+        private static Mutex? _mutex;
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            base.OnStartup(e);
-
-            // Single Instance Check - Prevent multiple instances
-            const string mutexName = "ClipzyApp_SingleInstance_Mutex";
-            _instanceMutex = new Mutex(true, mutexName, out bool createdNew);
+            const string mutexName = "Global\\Clipzy_SingleInstance_Mutex";
+            _mutex = new Mutex(true, mutexName, out bool createdNew);
 
             if (!createdNew)
             {
-                // Another instance is already running, show custom notification
-                var notification = new NotificationWindow("Clipzy is already running. Check the system tray.");
+                var notification = new NotificationWindow("Clipzy is running", "Check the system tray icon.", "Okay");
                 notification.ShowDialog();
                 Shutdown();
                 return;
             }
+
+            base.OnStartup(e);
+
+            CheckFirstRun();
 
             // Argument Parsing
             string[] args = e.Args;
@@ -54,7 +55,18 @@ namespace Clipzy
 
             bool isStartup = CheckStartup();
             _trayService.Initialize(hotkeyEnabled: _isHotkeyEnabled, contextMenuEnabled: true, startupEnabled: isStartup);
-            _trayService.ExitRequested += (s, ev) => Shutdown();
+            _trayService.ExitRequested += (s, ev) => 
+            {
+                SetStartup(false);
+                
+                // Reset FirstRun so it shows the "Installed" message next time we run manually
+                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Sunny-Hasho\Clipzy"))
+                {
+                    key.SetValue("FirstRun", 1);
+                }
+
+                Shutdown();
+            };
             _trayService.HotkeyToggleRequested += (s, enabled) => 
             {
                 _isHotkeyEnabled = enabled;
@@ -166,21 +178,31 @@ namespace Clipzy
         }
 
 
-
         protected override void OnExit(ExitEventArgs e)
         {
-            // Remove from startup registry when user exits the app
-            SetStartup(false);
-            
             _hotkeyService.Dispose();
             _trayService.Dispose();
             _contextMenuService.Unregister();
-            
-            // Release the mutex
-            _instanceMutex?.ReleaseMutex();
-            _instanceMutex?.Dispose();
-            
             base.OnExit(e);
+        }
+        private void CheckFirstRun()
+        {
+            const string registryKeyPath = @"Software\Sunny-Hasho\Clipzy";
+            const string valueName = "FirstRun";
+
+            using (RegistryKey key = Registry.CurrentUser.CreateSubKey(registryKeyPath))
+            {
+                object? value = key.GetValue(valueName);
+                if (value == null || (value is string s && s == "True") || (value is int i && i == 1))
+                {
+                    // It is the first run (or key missing)
+                    var notification = new NotificationWindow("Clipzy Installed", "Clipzy is now running in your system tray.", "Got it");
+                    notification.ShowDialog();
+                    
+                    // Set flag to false so it doesn't show again
+                    key.SetValue(valueName, 0);
+                }
+            }
         }
     }
 }
