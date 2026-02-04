@@ -94,6 +94,14 @@
                 </DockPanel>
             </Button>
 
+            <!-- Startup Toggle -->
+            <Button x:Name="BtnStartup" Style="{StaticResource MenuItemStyle}" Click="BtnStartup_Click">
+                <DockPanel LastChildFill="True">
+                    <TextBlock Text="Run on Startup" VerticalAlignment="Center" DockPanel.Dock="Left"/>
+                    <CheckBox x:Name="ChkStartup" Style="{StaticResource ToggleSwitchStyle}" HorizontalAlignment="Right" IsHitTestVisible="False"/>
+                </DockPanel>
+            </Button>
+
             <Rectangle Height="1" Fill="#EEE" Margin="5,5"/>
 
             <Button Style="{StaticResource MenuItemStyle}" Click="BtnOpenFolder_Click">

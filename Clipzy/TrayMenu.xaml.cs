@@ -8,11 +8,13 @@ namespace Clipzy
     {
         public event EventHandler<bool>? HotkeyToggleClicked;
         public event EventHandler<bool>? ContextMenuToggleClicked;
+        public event EventHandler<bool>? StartupToggleClicked;
         public event EventHandler? OpenFolderClicked;
         public event EventHandler? ExitClicked;
 
         private bool _hotkeyEnabled = true;
         private bool _contextMenuEnabled = true;
+        private bool _startupEnabled = false;
         private System.Windows.Threading.DispatcherTimer? _clickDetectionTimer;
         public DateTime LastHideTime { get; private set; } = DateTime.Now.AddYears(-1);
 
@@ -24,10 +26,11 @@ namespace Clipzy
             _clickDetectionTimer.Tick += ClickDetectionTimer_Tick;
         }
 
-        public void SetStates(bool hotkeyEnabled, bool contextMenuEnabled)
+        public void SetStates(bool hotkeyEnabled, bool contextMenuEnabled, bool startupEnabled)
         {
             _hotkeyEnabled = hotkeyEnabled;
             _contextMenuEnabled = contextMenuEnabled;
+            _startupEnabled = startupEnabled;
             UpdateVisuals();
         }
 
@@ -35,6 +38,7 @@ namespace Clipzy
         {
             ChkHotkey.IsChecked = _hotkeyEnabled;
             ChkContextMenu.IsChecked = _contextMenuEnabled;
+            ChkStartup.IsChecked = _startupEnabled;
         }
 
         private void ClickDetectionTimer_Tick(object? sender, EventArgs e)
@@ -109,6 +113,13 @@ namespace Clipzy
             _contextMenuEnabled = !_contextMenuEnabled;
             UpdateVisuals();
             ContextMenuToggleClicked?.Invoke(this, _contextMenuEnabled);
+        }
+
+        private void BtnStartup_Click(object sender, RoutedEventArgs e)
+        {
+            _startupEnabled = !_startupEnabled;
+            UpdateVisuals();
+            StartupToggleClicked?.Invoke(this, _startupEnabled);
         }
 
         private void BtnOpenFolder_Click(object sender, RoutedEventArgs e)

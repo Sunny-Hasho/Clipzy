@@ -12,16 +12,18 @@ namespace Clipzy.Services
 
         public event EventHandler<bool>? HotkeyToggleRequested;
         public event EventHandler<bool>? ContextMenuToggleRequested;
+        public event EventHandler<bool>? StartupToggleRequested;
         public event EventHandler? OpenFolderRequested;
         public event EventHandler? ExitRequested;
 
-        public void Initialize(bool hotkeyEnabled, bool contextMenuEnabled)
+        public void Initialize(bool hotkeyEnabled, bool contextMenuEnabled, bool startupEnabled)
         {
             _trayMenu = new TrayMenu();
-            _trayMenu.SetStates(hotkeyEnabled, contextMenuEnabled);
+            _trayMenu.SetStates(hotkeyEnabled, contextMenuEnabled, startupEnabled);
             
             _trayMenu.HotkeyToggleClicked += (s, enabled) => HotkeyToggleRequested?.Invoke(this, enabled);
             _trayMenu.ContextMenuToggleClicked += (s, enabled) => ContextMenuToggleRequested?.Invoke(this, enabled);
+            _trayMenu.StartupToggleClicked += (s, enabled) => StartupToggleRequested?.Invoke(this, enabled);
             _trayMenu.OpenFolderClicked += (s, e) => OpenFolderRequested?.Invoke(this, EventArgs.Empty);
             _trayMenu.ExitClicked += (s, e) => ExitRequested?.Invoke(this, EventArgs.Empty);
 

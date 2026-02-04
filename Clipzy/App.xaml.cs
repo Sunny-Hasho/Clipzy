@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using Microsoft.Win32;
 
 namespace Clipzy
 {
@@ -36,7 +37,8 @@ namespace Clipzy
             // Ensure Context Menu is registered on first run
             _contextMenuService.Register(); 
 
-            _trayService.Initialize(hotkeyEnabled: _isHotkeyEnabled, contextMenuEnabled: true);
+            bool isStartup = CheckStartup();
+            _trayService.Initialize(hotkeyEnabled: _isHotkeyEnabled, contextMenuEnabled: true, startupEnabled: isStartup);
             _trayService.ExitRequested += (s, ev) => Shutdown();
             _trayService.HotkeyToggleRequested += (s, enabled) => 
             {
@@ -47,6 +49,7 @@ namespace Clipzy
                 if (enabled) _contextMenuService.Register();
                 else _contextMenuService.Unregister();
             };
+            _trayService.StartupToggleRequested += (s, enabled) => SetStartup(enabled);
             _trayService.OpenFolderRequested += (s, ev) => 
             {
                 if (System.IO.Directory.Exists(_lastUsedPath))
@@ -99,6 +102,54 @@ namespace Clipzy
                 }
             }
         }
+
+        private const string AppName = "Clipzy";
+
+        private bool CheckStartup()
+        {
+            try
+            {
+                using (RegistryKey? key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", false))
+                {
+                    return key != null && key.GetValue(AppName) != null;
+                }
+            }
+            catch { return false; }
+        }
+
+        private void SetStartup(bool enable)
+        {
+            try
+            {
+                using (RegistryKey? key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true))
+                {
+                    if (key == null) return;
+
+                    if (enable)
+                    {
+                        string? path = Environment.ProcessPath;
+                        if (!string.IsNullOrEmpty(path))
+                        {
+                            // Ensure path is quoted if it contains spaces
+                            if (!path.StartsWith("\"") && path.Contains(" "))
+                            {
+                                path = $"\"{path}\"";
+                            }
+                            key.SetValue(AppName, path);
+                        }
+                    }
+                    else
+                    {
+                        key.DeleteValue(AppName, false);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error settings startup: {ex.Message}");
+            }
+        }
+
 
         protected override void OnExit(ExitEventArgs e)
         {

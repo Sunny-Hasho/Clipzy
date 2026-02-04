@@ -10,6 +10,13 @@
     <ApplicationIcon>app.ico</ApplicationIcon>
     <AssemblyName>Clipzy</AssemblyName>
     <RootNamespace>Clipzy</RootNamespace>
+    
+    <!-- Self-Contained Publishing Configuration -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishTrimmed>false</PublishTrimmed>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>
